@@ -1,14 +1,14 @@
-# 📊 Instagram Creator Analytics
+# Instagram Creator Analytics
 
 An end-to-end data analytics project exploring Instagram content performance, audience engagement, reach, impressions, and follower growth using SQL, Python, and Power BI.
 
-## 📌 Project Overview
+## Project Overview
 
 This project analyzes Instagram creator post data to identify performance patterns and translate them into actionable content-strategy recommendations.
 
 The analysis examines how media types, content categories, posting times, traffic sources, and calls to action relate to engagement and follower growth.
 
-## 🎯 Business Objectives
+## Business Objectives
 
 - Measure overall Instagram content performance.
 - Compare engagement across media types and content categories.
@@ -17,7 +17,7 @@ The analysis examines how media types, content categories, posting times, traffi
 - Investigate the relationship between engagement and follower growth.
 - Develop data-informed recommendations for content strategy.
 
-## 🛠️ Tools & Technologies
+## Tools & Technologies
 
 | Tool | Purpose |
 |---|---|
@@ -28,7 +28,7 @@ The analysis examines how media types, content categories, posting times, traffi
 | DAX | KPI calculations and dashboard measures |
 | Git & GitHub | Version control and project sharing |
 
-## 🔄 Project Workflow
+## Project Workflow
 
 1. Business understanding
 2. Dataset evaluation
@@ -40,7 +40,7 @@ The analysis examines how media types, content categories, posting times, traffi
 8. Business insights and recommendations
 9. Documentation and project presentation
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 Instagram_Creator_Analysis/
@@ -60,7 +60,7 @@ Instagram_Creator_Analysis/
 
 *Note: The tree highlights the main project files. Your local folders may contain additional files.*
 
-## 📈 Dataset Overview
+## Dataset Overview
 
 - **Primary dataset:** 29,999 Instagram post records
 - **Original columns:** 23
@@ -71,7 +71,7 @@ Data preparation included standardizing column names, parsing date fields, valid
 
 The additional datasets evaluated during the project were not combined with the primary dataset because of duplication, missing identifiers, or conflicting data.
 
-## 📊 Key Performance Indicators
+## Key Performance Indicators
 
 | KPI | Result |
 |---|---:|
@@ -84,7 +84,7 @@ The additional datasets evaluated during the project were not combined with the 
 | Total Followers Gained | 15,064,082 |
 | Average Followers Gained per Post | 502.15 |
 
-## 🔍 Key Findings
+## Key Findings
 
 ### 1. Content Category
 - Fashion recorded the highest average engagement at approximately 363.92 per post.
@@ -109,7 +109,7 @@ The additional datasets evaluated during the project were not combined with the 
 - The correlation between engagement and follower growth was approximately -0.005.
 - This indicates almost no linear relationship in this dataset; engagement alone should not be treated as a reliable indicator of follower growth.
 
-## 💡 Business Recommendations
+## Business Recommendations
 
 - Test content categories and formats against specific goals.
 - Track engagement and follower growth as separate performance metrics.
@@ -120,7 +120,7 @@ The additional datasets evaluated during the project were not combined with the 
 
 These recommendations are based on observed associations in the available dataset. They do not establish causation.
 
-## 📱 Power BI Dashboard
+## Power BI Dashboard
 
 The interactive dashboard contains four main pages:
 
@@ -131,13 +131,13 @@ The interactive dashboard contains four main pages:
 
 The dashboard uses an Instagram-inspired visual theme and interactive navigation and filters.
 
-## 📚 Project Documentation
+## Project Documentation
 
 - [Insights and Recommendations](Documents/insights_and_recommendations.md)
 - [SQL Analysis](SQL/analysis.sql)
 - [Python Analysis](Python/data_understanding.ipynb)
 
-## 🚀 How to Explore the Project
+## How to Explore the Project
 
 1. Clone or download this repository.
 2. Review the cleaned dataset in `Data/Cleaned/`.
@@ -147,13 +147,13 @@ The dashboard uses an Instagram-inspired visual theme and interactive navigation
 
 **Note:** The SQL analysis expects the `instagram_creator_analytics` database and the `instagram_posts` table to be configured in MySQL. Update connection and import steps as needed for your environment.
 
-## ⚠️ Limitations
+## Limitations
 
 - Findings describe the available dataset and may not generalize to all Instagram creators.
 - Observational patterns do not establish cause and effect.
 - Posting-time results can be affected by sample size, audience composition, and other factors.
 - More conversion-related metrics would be needed to explain follower growth fully.
 
-## 👩‍💻 About This Project
+## About This Project
 
 This project demonstrates an end-to-end analytics workflow, from data preparation and SQL querying to exploratory analysis, dashboard development, and business recommendations.

@@ -45,53 +45,49 @@ Instagram creators generate large amounts of performance data, including likes, 
 
 #### 4.1 Audience & Growth
 
-- How has follower count changed over time?
-- What is the weekly/monthly follower growth?
-- Which periods experienced the highest growth?
-- Are there periods of declining growth?
+- How do follower gains vary over time?
+- Which weeks or months have the highest recorded follower gains?
+- Are there periods when average or total follower gains decrease?
 
 #### 4.2 Content Performance
 
-- Which content format performs best?
-- Which posts/reels generate the highest reach?
-- Which content generates the most engagement?
-- Which content receives the most shares and saves?
-- What percentage of content is high-performing?
+- Which media type has the highest average engagement and reach?
+- Which individual posts have the highest engagement?
+- Which posts receive the most shares and saves?
+- What percentage of posts fall into each engagement-performance category?
 
 #### 4.3 Engagement
 
-- What is the average engagement rate?
-- How does engagement rate change over time?
-- Which content types have higher engagement?
-- Is higher reach associated with higher engagement?
+- What is the average calculated engagement rate?
+- How does engagement rate vary over time?
+- Which media types and content categories have higher average engagement?
+- Is reach associated with total engagement?
 
 #### 4.4 Posting Strategy
 
-- Which days are associated with better performance?
-- Which posting times are associated with stronger performance?
-- Does posting frequency relate to follower growth or engagement?
+- Which days of the week have higher average engagement?
+- Which posting hours are associated with higher average engagement and reach?
+- Is posting frequency associated with engagement or follower gains at the account level?
 
 #### 4.5 Content Characteristics
 
-- Which topics/content categories perform better?
-- Do different caption lengths perform differently?
-- Do Reels, carousels, images, and other formats perform differently?
+- Which content categories have higher average engagement and follower gains?
+- How do image, carousel, and reel performance differ?
+- Is caption length associated with engagement? 
 
 #### 4.6 Conversion
 
-- Does the number of hastags relate to content performance?
-- Does caption length relate to engagement?
-- Does having a call-to-action relate to engagement?
-- Which content is most effective at converting viewers into followers?
+- Is the presence of a CTA associated with differences in average engagement?
+- Does hashtag count relate to engagement? 
+- Which content categories or media types are associated with higher recorded follower gains?
 
 #### 4.7 Follower Growth
 
-- Which content characteristics are associated with higher follower gains?
-- Is follower count associated with the number of followers gained from posts?
-- Which content categories generate the highest follower gains?
+- Which media types and content categories have the highest average recorded follower gains?
+- Is post engagement associated with follower gains?
+- How do follower gains vary across traffic sources?
 
-
-Questions will be finalized after the dataset is selected. We will not create analysis for metrics that are unavailable in the dataset.
+The business questions have been refined based on the selected dataset and the analysis performed. Questions requiring unavailable metrics or additional analysis are outside the current scope and may be considered for future project extensions.
 
 ### 5. KPIs:
 

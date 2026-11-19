@@ -1,6 +1,6 @@
 # Instagram Creator Analytics
 
-An end-to-end data analytics project exploring Instagram content performance, audience engagement, reach, impressions, and follower growth using SQL, Python, and Power BI.
+An end-to-end data analytics project exploring Instagram content performance, audience engagement, reach, impressions, and follower growth using SQL, Python, and an interactive web dashboard.
 
 ## Project Overview
 
@@ -24,8 +24,8 @@ The analysis examines how media types, content categories, posting times, traffi
 | Python | Data cleaning, validation, and exploratory data analysis |
 | Pandas | Data manipulation and analysis |
 | MySQL | Data storage, querying, and SQL analysis |
-| Power BI | Interactive dashboard and visualization |
-| DAX | KPI calculations and dashboard measures |
+| Matplotlib | Charts during exploratory analysis |
+| HTML, CSS & JavaScript (SVG) | Interactive dashboard with filters |
 | Git & GitHub | Version control and project sharing |
 
 ## Project Workflow
@@ -36,24 +36,27 @@ The analysis examines how media types, content categories, posting times, traffi
 4. Database preparation and SQL analysis
 5. Python exploratory data analysis
 6. KPI analysis and visualization
-7. Power BI dashboard development
+7. Interactive dashboard development
 8. Business insights and recommendations
 9. Documentation and project presentation
 
 ## Project Structure
 
 ```text
-Instagram_Creator_Analysis/
+instagram-creator-analytics/
 ├── Data/
-│   └── Cleaned/
+│   ├── Raw/                     # original dataset
+│   └── Cleaned/                 # analysis-ready dataset
 ├── Docs/
+│   ├── Business_Understanding.md
+│   ├── Project_Scope.md
+│   ├── Data_Requirements.md
 │   └── Insights_Recommendation.md
 ├── Python/
 │   └── data_understanding.ipynb
 ├── SQL/
+│   ├── setup.sql                # creates the database and loads the CSV
 │   └── analysis.sql
-├── PowerBI/
-│   └── Instagram_Creator_Analytics.pbix
 ├── Dashboard/
 │   ├── index.html               # interactive web dashboard (open in a browser)
 │   ├── dashboard_template.html  # dashboard layout and chart code
@@ -62,8 +65,6 @@ Instagram_Creator_Analysis/
 ├── .gitignore
 └── README.md
 ```
-
-*Note: The tree highlights the main project files. Your local folders may contain additional files.*
 
 ## Dataset Overview
 
@@ -139,19 +140,11 @@ A browser-based version of the dashboard lives in [`Dashboard/`](Dashboard/). It
 
 To rebuild after changing the data: `python Dashboard/build_dashboard.py` (requires pandas).
 
-## Power BI Dashboard
-
-The interactive dashboard contains four main pages:
-
-- **Overview:** Core KPIs and high-level performance insights
-- **Content Performance:** Comparisons across media types and content categories
-- **Audience & Growth:** Follower growth patterns and engagement relationships
-- **Posting Time Analysis:** Engagement and reach patterns by posting hour and day
-
-The dashboard uses an Instagram-inspired visual theme and interactive navigation and filters.
-
 ## Project Documentation
 
+- [Business Understanding](Docs/Business_Understanding.md)
+- [Project Scope](Docs/Project_Scope.md)
+- [Data Requirements](Docs/Data_Requirements.md)
 - [Insights and Recommendations](Docs/Insights_Recommendation.md)
 - [SQL Analysis](SQL/analysis.sql)
 - [Python Analysis](Python/data_understanding.ipynb)
@@ -159,12 +152,11 @@ The dashboard uses an Instagram-inspired visual theme and interactive navigation
 ## How to Explore the Project
 
 1. Clone or download this repository.
-2. Review the cleaned dataset in `Data/Cleaned/`.
-3. Open the Python notebook to explore data preparation and analysis.
-4. Run the SQL queries against a MySQL database configured with the project table.
-5. Open `PowerBI/Instagram_Creator_Analytics.pbix` in Power BI Desktop to explore the dashboard.
+2. Open `Dashboard/index.html` in a browser (or the GitHub Pages link above) for the interactive dashboard.
+3. Run `Python/data_understanding.ipynb` from the `Python/` folder, top to bottom, to reproduce the cleaning and EDA. It writes `Data/Cleaned/instagram_creator_cleaned.csv`.
+4. In MySQL, run `SQL/setup.sql` to create the `instagram_creator_analytics` database and load the cleaned CSV, then run the queries in `SQL/analysis.sql`.
 
-**Note:** The SQL analysis expects the `instagram_creator_analytics` database and the `instagram_posts` table to be configured in MySQL. Update connection and import steps as needed for your environment.
+**Note:** `SQL/setup.sql` uses `LOAD DATA LOCAL INFILE`. Enable `local_infile` in your MySQL client and server, and update the file path in the script to match your machine.
 
 ## Limitations
 
@@ -176,3 +168,5 @@ The dashboard uses an Instagram-inspired visual theme and interactive navigation
 ## About This Project
 
 This project demonstrates an end-to-end analytics workflow, from data preparation and SQL querying to exploratory analysis, dashboard development, and business recommendations.
+
+**Next step:** rebuild the dashboard in Power BI with DAX measures, using the same KPIs and page structure.

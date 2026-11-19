@@ -3,11 +3,11 @@
 
 -- 1. DATABASE VERIFICATION
 
--- Question:1 Which database are we currently using?
+-- Run SQL/setup.sql first to create and load the table.
 
 USE instagram_creator_analytics;
 
--- Which tables exist in the database?
+-- Which database are we currently using?
 
 SELECT DATABASE();
 
@@ -23,21 +23,18 @@ FROM instagram_posts;
 -- 2. BASIC KPI ANALYSIS
 
 -- 2.1 Total Posts
--- Question: How many posts are in the dataset?
 -- How many posts are in the dataset?
 
 SELECT COUNT(*) AS total_posts
 FROM instagram_posts;
 
 -- 2.2 Total Unique Accounts
--- Question: How many unique accounts are represented?
 -- How many unique accounts are represented?
 
 SELECT COUNT(DISTINCT account_id) AS total_accounts
 FROM instagram_posts;
 
 -- 2.3 Total Engagement
--- Question: How much total engagement did all posts generate?
 -- How much total engagement did all posts generate?
 
 SELECT
@@ -49,7 +46,6 @@ SELECT
 FROM instagram_posts;
 
 -- 2.4 Average Engagement
--- Question: What is the average engagement per post?
 -- What is the average engagement per post?
 
 SELECT
@@ -61,7 +57,6 @@ SELECT
 FROM instagram_posts;
 
 -- 2.5 Reach
--- Question: How much audience reach do posts generate?
 -- How much audience reach do posts generate?
 
 SELECT
@@ -72,7 +67,6 @@ SELECT
 FROM instagram_posts;
 
 -- 2.6 Impressions
--- Question: How much visibility do posts generate?
 -- How much visibility do posts generate?
 
 SELECT
@@ -83,7 +77,6 @@ SELECT
 FROM instagram_posts;
 
 -- 2.7 Follower Growth
--- Question: How many followers were gained from posts?
 -- How many followers were gained from posts?
 
 SELECT
@@ -94,7 +87,6 @@ SELECT
 FROM instagram_posts;
 
 -- 2.8 Engagement Rate
--- Question: What are the source and calculated engagement rate ranges?
 -- What are the source and calculated engagement rate ranges?
 
 SELECT
@@ -107,7 +99,6 @@ SELECT
 FROM instagram_posts;
 
 -- 2.9 Date Coverage
--- Question: What period does the dataset cover?
 -- What period does the dataset cover?
 
 SELECT

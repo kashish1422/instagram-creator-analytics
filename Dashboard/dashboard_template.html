@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instagram Creator Analytics Dashboard</title>
+<meta name="description" content="Interactive dashboard analysing 29,999 Instagram posts: engagement, reach, follower growth, content and posting-time performance.">
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7;
+    --surface: #fcfcfb;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --axis: #c3c2b7;
+    --border: rgba(11,11,11,0.10);
+    --hover: rgba(11,11,11,0.04);
+    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+    --good: #006300; --bad: #d03b3b;
+    --accent: linear-gradient(90deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --page: #0d0d0d;
+      --surface: #1a1a19;
+      --text-primary: #f0efec;
+      --text-secondary: #c3c2b7;
+      --muted: #898781;
+      --grid: #2c2c2a;
+      --axis: #383835;
+      --border: rgba(255,255,255,0.10);
+      --hover: rgba(255,255,255,0.05);
+      --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+      --good: #0ca30c; --bad: #e66767;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page); color: var(--text-primary);
+    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .accent { height: 4px; background: var(--accent); }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 20px 24px 48px; }
+  header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
+  h1 { font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+  .sub { color: var(--text-secondary); margin-top: 2px; }
+  .sub a { color: inherit; }
+
+  nav.tabs { display: flex; gap: 4px; margin: 18px 0 12px; border-bottom: 1px solid var(--grid); overflow-x: auto; }
+  nav.tabs button {
+    background: none; border: 0; padding: 10px 14px; font: inherit; font-weight: 600; cursor: pointer;
+    color: var(--text-secondary); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap;
+  }
+  nav.tabs button[aria-selected="true"] { color: var(--text-primary); border-bottom-color: var(--text-primary); }
+  nav.tabs button:hover { color: var(--text-primary); }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end; margin-bottom: 16px; }
+  .filters label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--text-secondary); }
+  .filters select {
+    font: inherit; font-size: 13px; color: var(--text-primary); background: var(--surface);
+    border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; min-width: 120px;
+  }
+  .filters button.reset {
+    font: inherit; font-size: 13px; border: 1px solid var(--border); background: var(--surface);
+    color: var(--text-primary); border-radius: 8px; padding: 6px 12px; cursor: pointer;
+  }
+  .filters .count { font-size: 12px; color: var(--muted); margin-left: auto; align-self: center; }
+
+  .grid { display: grid; gap: 14px; grid-template-columns: repeat(12, 1fr); }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 16px; min-width: 0;
+  }
+  .span-12 { grid-column: span 12; } .span-8 { grid-column: span 8; } .span-7 { grid-column: span 7; }
+  .span-6 { grid-column: span 6; } .span-5 { grid-column: span 5; } .span-4 { grid-column: span 4; }
+  @media (max-width: 900px) { .grid > .card { grid-column: span 12; } }
+  .card h2 { font-size: 14px; margin: 0; }
+  .card .desc { font-size: 12px; color: var(--text-secondary); margin: 2px 0 10px; }
+  .card-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 14px; }
+  .kpi .label { font-size: 12px; color: var(--text-secondary); }
+  .kpi .value { font-size: 26px; font-weight: 650; letter-spacing: -0.02em; margin-top: 2px; }
+  .kpi .note { font-size: 12px; color: var(--muted); }
+
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .seg button {
+    font: inherit; font-size: 12px; background: var(--surface); color: var(--text-secondary);
+    border: 0; padding: 5px 10px; cursor: pointer; border-right: 1px solid var(--border);
+  }
+  .seg button:last-child { border-right: 0; }
+  .seg button[aria-pressed="true"] { background: var(--text-primary); color: var(--surface); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--text-secondary); margin-top: 8px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  .chart { width: 100%; position: relative; }
+  .chart svg { display: block; overflow: visible; }
+  svg text { fill: var(--muted); font-size: 11px; font-family: inherit; }
+  svg text.lbl { fill: var(--text-secondary); font-size: 12px; }
+  svg text.val { fill: var(--text-primary); font-size: 12px; font-variant-numeric: tabular-nums; }
+  svg .gridline { stroke: var(--grid); stroke-width: 1; }
+  svg .baseline { stroke: var(--axis); stroke-width: 1; }
+  svg [data-tip] { cursor: default; }
+  svg .band:hover { fill: var(--hover); }
+  svg .hov .guide, svg .hov .dot-h { opacity: 0; }
+  svg .hov:hover .guide, svg .hov:hover .dot-h { opacity: 1; }
+  svg .hov:hover .bandbg { fill: var(--hover); }
+  svg .cell:hover { stroke: var(--text-primary); stroke-width: 1.5; }
+
+  #tip {
+    position: fixed; pointer-events: none; z-index: 10; background: var(--surface); color: var(--text-primary);
+    border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; font-size: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12); opacity: 0; transition: opacity .08s; max-width: 260px;
+  }
+  #tip b { display: block; margin-bottom: 2px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 7px 8px; text-align: right; border-bottom: 1px solid var(--grid); font-variant-numeric: tabular-nums; }
+  th:first-child, td:first-child { text-align: left; }
+  th { font-size: 12px; color: var(--text-secondary); font-weight: 600; cursor: pointer; user-select: none; white-space: nowrap; }
+  th:hover { color: var(--text-primary); }
+  td.best { font-weight: 700; }
+  .table-scroll { overflow-x: auto; }
+
+  .takeaways { margin: 0; padding-left: 18px; }
+  .takeaways li { margin: 6px 0; }
+  .callout { font-size: 12px; color: var(--text-secondary); border-left: 3px solid var(--axis); padding: 4px 10px; margin-top: 10px; }
+  .stat-big { font-size: 34px; font-weight: 650; letter-spacing: -0.02em; }
+  .page { display: none; }
+  .page.active { display: block; }
+  footer { margin-top: 28px; font-size: 12px; color: var(--muted); }
+  .empty { color: var(--muted); font-size: 13px; padding: 30px 0; text-align: center; }
+</style>
+</head>
+<body>
+<div class="accent"></div>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Instagram Creator Analytics</h1>
+      <div class="sub" id="subtitle"></div>
+    </div>
+    <div class="sub">Built with Python &middot; SQL &middot; vanilla JS/SVG</div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-page="overview" aria-selected="true">Overview</button>
+    <button role="tab" data-page="content" aria-selected="false">Content Performance</button>
+    <button role="tab" data-page="growth" aria-selected="false">Audience &amp; Growth</button>
+    <button role="tab" data-page="timing" aria-selected="false">Posting Time &amp; Traffic</button>
+  </nav>
+
+  <div class="filters" id="filters">
+    <label>Account type<select data-f="at"></select></label>
+    <label>Media type<select data-f="mt"></select></label>
+    <label>Category<select data-f="cat"></select></label>
+    <label>Traffic source<select data-f="ts"></select></label>
+    <label>Call to action<select data-f="cta"><option value="-1">All</option><option value="1">With CTA</option><option value="0">Without CTA</option></select></label>
+    <label>From<select data-f="moFrom"></select></label>
+    <label>To<select data-f="moTo"></select></label>
+    <button class="reset" id="reset">Reset filters</button>
+    <span class="count" id="count"></span>
+  </div>
+
+  <!-- OVERVIEW -->
+  <section class="page active" id="page-overview">
+    <div class="kpis" id="kpis"></div>
+    <div class="grid">
+      <div class="card span-8">
+        <h2>Average engagement per post by month</h2>
+        <div class="desc">Likes + comments + shares + saves, averaged per post. First and last months are partial.</div>
+        <div class="chart" id="c-trend"></div>
+      </div>
+      <div class="card span-4">
+        <h2>Key takeaways</h2>
+        <div class="desc">Recomputed live for the current filters.</div>
+        <ul class="takeaways" id="takeaways"></ul>
+      </div>
+      <div class="card span-7">
+        <h2>Engagement distribution</h2>
+        <div class="desc">Number of posts by total engagement. A long right tail of high performers lifts the average.</div>
+        <div class="chart" id="c-hist"></div>
+      </div>
+      <div class="card span-5">
+        <h2>What engagement is made of</h2>
+        <div class="desc">Share of total interactions by type.</div>
+        <div class="chart" id="c-mix"></div>
+        <div class="callout" id="mix-note"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTENT -->
+  <section class="page" id="page-content">
+    <div class="grid">
+      <div class="card span-12">
+        <div class="card-head">
+          <div>
+            <h2>Compare content by objective</h2>
+            <div class="desc">Pick the goal; both charts below update. The leader changes with the objective.</div>
+          </div>
+          <div class="seg" id="metric-seg"></div>
+        </div>
+      </div>
+      <div class="card span-5">
+        <h2 id="t-media"></h2>
+        <div class="desc">Per-post average by format.</div>
+        <div class="chart" id="c-media"></div>
+      </div>
+      <div class="card span-7">
+        <h2 id="t-cat"></h2>
+        <div class="desc">Per-post average by content category, sorted.</div>
+        <div class="chart" id="c-cat"></div>
+      </div>
+      <div class="card span-12">
+        <h2>Category scorecard</h2>
+        <div class="desc">Click a column header to sort. Bold = best in column.</div>
+        <div class="table-scroll" id="t-scorecard"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GROWTH -->
+  <section class="page" id="page-growth">
+    <div class="grid">
+      <div class="card span-4">
+        <h2>Engagement vs follower growth</h2>
+        <div class="desc">Pearson correlation across the filtered posts.</div>
+        <div class="stat-big" id="corr"></div>
+        <div class="callout" id="corr-note"></div>
+      </div>
+      <div class="card span-8">
+        <h2>Engagement vs followers gained per post</h2>
+        <div class="desc">Sample of up to 1,500 posts. No visible upward trend: more engagement does not mean more followers here.</div>
+        <div class="chart" id="c-scatter"></div>
+      </div>
+      <div class="card span-6">
+        <h2>Average followers gained by category</h2>
+        <div class="desc">Per post, sorted.</div>
+        <div class="chart" id="c-fg-cat"></div>
+      </div>
+      <div class="card span-6">
+        <h2>Average followers gained by media type</h2>
+        <div class="desc">Per post.</div>
+        <div class="chart" id="c-fg-media"></div>
+        <h2 style="margin-top:18px">Brand vs creator accounts</h2>
+        <div class="desc">Average followers gained per post.</div>
+        <div class="chart" id="c-fg-acct"></div>
+      </div>
+      <div class="card span-12">
+        <h2>Does a call to action help?</h2>
+        <div class="desc">Posts with vs without a CTA, compared on three objectives.</div>
+        <div class="grid" style="gap:14px">
+          <div class="span-4" style="grid-column:span 4"><div class="desc">Avg engagement</div><div class="chart" id="c-cta-eng"></div></div>
+          <div class="span-4" style="grid-column:span 4"><div class="desc">Avg engagement rate</div><div class="chart" id="c-cta-er"></div></div>
+          <div class="span-4" style="grid-column:span 4"><div class="desc">Avg followers gained</div><div class="chart" id="c-cta-fg"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIMING -->
+  <section class="page" id="page-timing">
+    <div class="grid">
+      <div class="card span-12">
+        <h2>Average engagement by day and hour</h2>
+        <div class="desc">Darker = higher average engagement per post. Hover a cell for details.</div>
+        <div class="chart" id="c-heat"></div>
+      </div>
+      <div class="card span-7">
+        <h2>Average engagement by posting hour</h2>
+        <div class="desc">Hour of day the post went live.</div>
+        <div class="chart" id="c-hour"></div>
+      </div>
+      <div class="card span-5">
+        <h2>Average engagement by day of week</h2>
+        <div class="desc">Per post.</div>
+        <div class="chart" id="c-day"></div>
+      </div>
+      <div class="card span-6">
+        <h2>Average engagement by traffic source</h2>
+        <div class="desc">Where viewers found the post.</div>
+        <div class="chart" id="c-ts-eng"></div>
+      </div>
+      <div class="card span-6">
+        <h2>Average engagement rate by traffic source</h2>
+        <div class="desc">Engagement &divide; reach, averaged per post.</div>
+        <div class="chart" id="c-ts-er"></div>
+      </div>
+    </div>
+    <div class="callout">Timing patterns are observational. Posting hour is recorded without audience time zone, so treat peaks as hypotheses to test, not a schedule.</div>
+  </section>
+
+  <footer>
+    Data: <code>Data/Cleaned/instagram_creator_cleaned.csv</code>. Engagement rate = (likes + comments + shares + saves) &divide; reach, averaged per post.
+    Findings describe this dataset and show association, not causation.
+  </footer>
+</div>
+<div id="tip" role="tooltip"></div>
+
+<script>
+const DATA = /*__DATA__*/null;
+</script>
+<script>
+(function () {
+  "use strict";
+  const C = DATA.cols, D = DATA.dims, N = DATA.meta.rows;
+
+  // ---------- derived per-post measures ----------
+  const ENG = new Float64Array(N), ER = new Float64Array(N);
+  for (let i = 0; i < N; i++) {
+    ENG[i] = C.lk[i] + C.cm[i] + C.sh[i] + C.sv[i];
+    ER[i] = ENG[i] / C.rc[i] * 100;
+  }
+
+  // ---------- formatting ----------
+  const nf0 = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+  const nf1 = new Intl.NumberFormat("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const nf2 = new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtInt = v => nf0.format(Math.round(v));
+  const fmt1 = v => nf1.format(v);
+  const fmtPct = v => nf2.format(v) + "%";
+  const compact = v => {
+    const a = Math.abs(v);
+    if (a >= 1e6) return (v / 1e6).toFixed(a >= 1e7 ? 1 : 2).replace(/\.0+$/, "") + "M";
+    if (a >= 1e4) return (v / 1e3).toFixed(0) + "K";
+    if (a >= 1e3) return (v / 1e3).toFixed(1).replace(/\.0$/, "") + "K";
+    return fmtInt(v);
+  };
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const monthLabel = m => { const [y, mm] = m.split("-"); return new Date(+y, +mm - 1, 1).toLocaleString("en-US", { month: "short" }) + " " + y.slice(2); };
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+  const MEDIA_COLORS = ["--s1", "--s2", "--s3"]; // image, carousel, reel: fixed per entity
+  const SEQ = ["#cde2fb", "#b7d3f6", "#9ec5f4", "#86b6ef", "#6da7ec", "#5598e7", "#3987e5", "#2a78d6", "#256abf", "#1c5cab", "#184f95", "#104281", "#0d366b"];
+
+  const METRICS = {
+    eng: { label: "Avg engagement", short: "Engagement", get: g => g.eng / g.n, fmt: fmt1 },
+    reach: { label: "Avg reach", short: "Reach", get: g => g.rc / g.n, fmt: fmtInt },
+    er: { label: "Avg engagement rate", short: "Eng. rate", get: g => g.er / g.n, fmt: fmtPct },
+    fg: { label: "Avg followers gained", short: "Followers", get: g => g.fg / g.n, fmt: fmt1 },
+  };
+
+  // ---------- state & filtering ----------
+  const state = { at: -1, mt: -1, cat: -1, ts: -1, cta: -1, moFrom: 0, moTo: D.months.length - 1, metric: "eng", sortKey: "eng", sortDir: -1, page: "overview" };
+
+  function filtered() {
+    const out = new Int32Array(N); let k = 0;
+    const { at, mt, cat, ts, cta, moFrom, moTo } = state;
+    for (let i = 0; i < N; i++) {
+      if (at >= 0 && C.at[i] !== at) continue;
+      if (mt >= 0 && C.mt[i] !== mt) continue;
+      if (cat >= 0 && C.cat[i] !== cat) continue;
+      if (ts >= 0 && C.ts[i] !== ts) continue;
+      if (cta >= 0 && C.cta[i] !== cta) continue;
+      if (C.mo[i] < moFrom || C.mo[i] > moTo) continue;
+      out[k++] = i;
+    }
+    return out.subarray(0, k);
+  }
+
+  function blank() { return { n: 0, eng: 0, rc: 0, im: 0, er: 0, fg: 0, lk: 0, cm: 0, sh: 0, sv: 0 }; }
+  function add(o, i) {
+    o.n++; o.eng += ENG[i]; o.rc += C.rc[i]; o.im += C.im[i]; o.er += ER[i]; o.fg += C.fg[i];
+    o.lk += C.lk[i]; o.cm += C.cm[i]; o.sh += C.sh[i]; o.sv += C.sv[i];
+  }
+  function group(keyFn, n, idx) {
+    const g = Array.from({ length: n }, blank);
+    for (const i of idx) add(g[keyFn(i)], i);
+    return g;
+  }
+  function total(idx) { const o = blank(); for (const i of idx) add(o, i); return o; }
+
+  // ---------- tooltip ----------
+  const tip = document.getElementById("tip");
+  document.addEventListener("mousemove", e => {
+    const t = e.target.closest && e.target.closest("[data-tip]");
+    if (!t) { tip.style.opacity = 0; return; }
+    tip.innerHTML = t.getAttribute("data-tip");
+    const r = tip.getBoundingClientRect();
+    let x = e.clientX + 14, y = e.clientY + 14;
+    if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 14;
+    if (y + r.height > innerHeight - 8) y = e.clientY - r.height - 14;
+    tip.style.left = x + "px"; tip.style.top = y + "px"; tip.style.opacity = 1;
+  });
+  const tipHtml = (title, rows) => "<b>" + esc(title) + "</b>" + rows.map(([k, v]) => esc(k) + ": <strong>" + esc(v) + "</strong>").join("<br>");
+
+  // ---------- chart primitives ----------
+  function niceMax(v) {
+    if (v <= 0) return 1;
+    const p = Math.pow(10, Math.floor(Math.log10(v))), f = v / p;
+    return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p;
+  }
+  // Bar path with 4px rounded data-end, square at baseline.
+  function hBarPath(x, y, w, h) {
+    const r = Math.min(4, w, h / 2);
+    if (w <= 0) return "";
+    return `M${x},${y}h${w - r}a${r},${r} 0 0 1 ${r},${r}v${h - 2 * r}a${r},${r} 0 0 1 ${-r},${r}h${-(w - r)}z`;
+  }
+  function vBarPath(x, y, w, h) {
+    const r = Math.min(4, h, w / 2);
+    if (h <= 0) return "";
+    return `M${x},${y + h}v${-(h - r)}a${r},${r} 0 0 1 ${r},${-r}h${w - 2 * r}a${r},${r} 0 0 1 ${r},${r}v${h - r}z`;
+  }
+  const svgOpen = (w, h, label) => `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(label)}">`;
+  const empty = el => { el.innerHTML = '<div class="empty">No posts match these filters.</div>'; };
+
+  // Horizontal bars: rows = [{label, value, color?, tip?}]
+  function hbars(el, rows, o) {
+    if (!rows.length || rows.every(r => !isFinite(r.value))) return empty(el);
+    const W = el.clientWidth || 400, labelW = o.labelW || 100, valW = 64, rowH = o.rowH || 30, bh = Math.min(18, rowH - 10);
+    const H = rows.length * rowH + 4;
+    const max = o.max || niceMax(Math.max(...rows.map(r => r.value)));
+    const plotW = Math.max(40, W - labelW - valW);
+    let s = svgOpen(W, H, o.aria || "bar chart");
+    s += `<line class="baseline" x1="${labelW}" x2="${labelW}" y1="0" y2="${H}"/>`;
+    rows.forEach((r, k) => {
+      const y = k * rowH, w = Math.max(0, r.value / max * plotW), color = r.color || css("--s1");
+      const t = r.tip || tipHtml(r.label, [[o.metricLabel || "Value", o.fmt(r.value)]]);
+      s += `<g data-tip="${esc(t)}"><rect class="band" x="0" y="${y}" width="${W}" height="${rowH}" fill="transparent"/>`;
+      s += `<text class="lbl" x="${labelW - 10}" y="${y + rowH / 2 + 4}" text-anchor="end">${esc(r.label)}</text>`;
+      s += `<path d="${hBarPath(labelW, y + (rowH - bh) / 2, w, bh)}" fill="${color}"/>`;
+      s += `<text class="val" x="${labelW + w + 8}" y="${y + rowH / 2 + 4}">${esc(o.fmt(r.value))}</text></g>`;
+    });
+    el.innerHTML = s + "</svg>";
+  }
+
+  // Vertical bars with y grid
+  function vbars(el, rows, o) {
+    if (!rows.length || rows.every(r => !(r.value > 0))) return empty(el);
+    const W = el.clientWidth || 400, H = o.height || 220, padL = 46, padB = 26, padT = 18;
+    const max = niceMax(Math.max(...rows.map(r => r.value)));
+    const plotW = W - padL - 6, plotH = H - padB - padT, band = plotW / rows.length;
+    const bw = Math.min(o.barMax || 24, band - 2);
+    let s = svgOpen(W, H, o.aria || "column chart");
+    for (let t = 0; t <= 4; t++) {
+      const v = max * t / 4, y = padT + plotH - v / max * plotH;
+      s += `<line class="gridline" x1="${padL}" x2="${W - 6}" y1="${y}" y2="${y}"/><text x="${padL - 6}" y="${y + 4}" text-anchor="end">${esc((o.axisFmt || compact)(v))}</text>`;
+    }
+    const every = o.labelEvery || Math.ceil(rows.length / Math.max(1, Math.floor(plotW / 44)));
+    rows.forEach((r, k) => {
+      const x = padL + k * band, h = Math.max(0, r.value / max * plotH), y = padT + plotH - h;
+      const t = r.tip || tipHtml(r.label, [[o.metricLabel || "Value", o.fmt(r.value)]]);
+      s += `<g data-tip="${esc(t)}"><rect class="band" x="${x}" y="${padT}" width="${band}" height="${plotH}" fill="transparent"/>`;
+      s += `<path d="${vBarPath(x + (band - bw) / 2, y, bw, h)}" fill="${r.color || css("--s1")}"/>`;
+      if (o.showValues) s += `<text class="val" x="${x + band / 2}" y="${y - 6}" text-anchor="middle">${esc(o.fmt(r.value))}</text>`;
+      if (k % every === 0) s += `<text x="${x + band / 2}" y="${H - 8}" text-anchor="middle">${esc(r.short || r.label)}</text>`;
+      s += "</g>";
+    });
+    s += `<line class="baseline" x1="${padL}" x2="${W - 6}" y1="${padT + plotH}" y2="${padT + plotH}"/>`;
+    el.innerHTML = s + "</svg>";
+  }
+
+  // Line with hover guide per x position
+  function line(el, pts, o) {
+    const valid = pts.filter(p => isFinite(p.value));
+    if (!valid.length) return empty(el);
+    const W = el.clientWidth || 600, H = o.height || 240, padL = 46, padR = 14, padB = 26, padT = 14;
+    const vals = valid.map(p => p.value);
+    let lo = Math.min(...vals), hi = Math.max(...vals);
+    if (o.zero) lo = 0; else { const pad = (hi - lo) * 0.25 || hi * 0.05; lo = Math.max(0, lo - pad); hi = hi + pad; }
+    const ticks = 4, step = niceMax((hi - lo) / ticks) / (niceMax((hi - lo) / ticks) / ((hi - lo) / ticks) > 1.6 ? 2 : 1);
+    lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step;
+    const plotW = W - padL - padR, plotH = H - padB - padT;
+    const xAt = k => padL + (pts.length === 1 ? plotW / 2 : k / (pts.length - 1) * plotW);
+    const yAt = v => padT + plotH - (v - lo) / (hi - lo || 1) * plotH;
+    let s = svgOpen(W, H, o.aria || "line chart");
+    for (let v = lo; v <= hi + 1e-9; v += step) {
+      const y = yAt(v);
+      s += `<line class="gridline" x1="${padL}" x2="${W - padR}" y1="${y}" y2="${y}"/><text x="${padL - 6}" y="${y + 4}" text-anchor="end">${esc((o.axisFmt || compact)(v))}</text>`;
+    }
+    const color = css("--s1");
+    let d = "", started = false;
+    pts.forEach((p, k) => { if (!isFinite(p.value)) { started = false; return; } d += (started ? "L" : "M") + xAt(k) + "," + yAt(p.value); started = true; });
+    s += `<path d="${d}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    const band = plotW / Math.max(1, pts.length - 1);
+    const every = Math.ceil(pts.length / Math.max(1, Math.floor(plotW / 52)));
+    pts.forEach((p, k) => {
+      const x = xAt(k);
+      if (k % every === 0 || k === pts.length - 1 && pts.length < 16) s += `<text x="${x}" y="${H - 8}" text-anchor="middle">${esc(p.short || p.label)}</text>`;
+      if (!isFinite(p.value)) return;
+      const t = p.tip || tipHtml(p.label, [[o.metricLabel || "Value", o.fmt(p.value)]]);
+      s += `<g class="hov" data-tip="${esc(t)}"><rect class="bandbg" x="${x - band / 2}" y="${padT}" width="${band}" height="${plotH}" fill="transparent"/>`;
+      s += `<line class="guide gridline" x1="${x}" x2="${x}" y1="${padT}" y2="${padT + plotH}" style="stroke:var(--axis)"/>`;
+      s += `<circle class="dot-h" cx="${x}" cy="${yAt(p.value)}" r="4.5" fill="${color}" stroke="var(--surface)" stroke-width="2"/></g>`;
+    });
+    // end dot + direct label on last point
+    const last = pts.length - 1;
+    if (isFinite(pts[last].value)) s += `<circle cx="${xAt(last)}" cy="${yAt(pts[last].value)}" r="4" fill="${color}"/>`;
+    s += `<line class="baseline" x1="${padL}" x2="${W - padR}" y1="${padT + plotH}" y2="${padT + plotH}"/>`;
+    el.innerHTML = s + "</svg>";
+  }
+
+  // ---------- page renderers ----------
+  function renderOverview(idx, T) {
+    const kpis = [
+      ["Total posts", fmtInt(T.n), DATA.meta.accounts + " accounts in full dataset"],
+      ["Total engagement", compact(T.eng), fmtInt(T.eng) + " interactions"],
+      ["Avg engagement / post", fmt1(T.eng / T.n), "likes + comments + shares + saves"],
+      ["Avg reach", fmtInt(T.rc / T.n), "Avg impressions " + fmtInt(T.im / T.n)],
+      ["Avg engagement rate", fmtPct(T.er / T.n), "engagement ÷ reach"],
+      ["Followers gained", compact(T.fg), fmt1(T.fg / T.n) + " per post"],
+    ];
+    document.getElementById("kpis").innerHTML = kpis.map(([l, v, n]) =>
+      `<div class="card kpi"><div class="label">${esc(l)}</div><div class="value">${T.n ? esc(v) : "–"}</div><div class="note">${T.n ? esc(n) : "&nbsp;"}</div></div>`).join("");
+
+    // trend
+    const gm = group(i => C.mo[i], D.months.length, idx);
+    const pts = [];
+    for (let m = state.moFrom; m <= state.moTo; m++) {
+      const g = gm[m];
+      pts.push({ label: monthLabel(D.months[m]), short: monthLabel(D.months[m]), value: g.n ? g.eng / g.n : NaN,
+        tip: tipHtml(monthLabel(D.months[m]), [["Avg engagement", g.n ? fmt1(g.eng / g.n) : "–"], ["Posts", fmtInt(g.n)], ["Avg reach", g.n ? fmtInt(g.rc / g.n) : "–"]]) });
+    }
+    line(document.getElementById("c-trend"), pts, { fmt: fmt1, metricLabel: "Avg engagement", aria: "Average engagement per post by month" });
+
+    // histogram (fixed bins from full data so shape is comparable across filters)
+    const BIN = HIST.bin, NB = HIST.n;
+    const counts = new Array(NB).fill(0);
+    for (const i of idx) counts[Math.min(NB - 1, Math.floor(ENG[i] / BIN))]++;
+    vbars(document.getElementById("c-hist"), counts.map((c, k) => {
+      const lab = k === NB - 1 ? "≥" + fmtInt(k * BIN) : fmtInt(k * BIN) + "–" + fmtInt((k + 1) * BIN - 1);
+      return { label: lab, short: k === NB - 1 ? fmtInt(k * BIN) + "+" : fmtInt(k * BIN), value: c, tip: tipHtml(lab + " interactions", [["Posts", fmtInt(c)], ["Share", T.n ? (c / T.n * 100).toFixed(1) + "%" : "–"]]) };
+    }), { fmt: fmtInt, metricLabel: "Posts", barMax: 24, aria: "Histogram of engagement per post", labelEvery: 4 });
+
+    // engagement mix stacked bar
+    const parts = [["Likes", T.lk, "--s1"], ["Comments", T.cm, "--s2"], ["Shares", T.sh, "--s3"], ["Saves", T.sv, "--s4"]];
+    const el = document.getElementById("c-mix");
+    if (!T.n) { empty(el); document.getElementById("mix-note").textContent = ""; }
+    else {
+      const W = el.clientWidth || 400, bh = 24, gap = 2; let x = 0;
+      let s = svgOpen(W, bh, "Engagement composition");
+      const usable = W - gap * (parts.length - 1);
+      parts.forEach(([name, v, c], k) => {
+        const w = v / T.eng * usable;
+        const r = k === parts.length - 1 ? 4 : 0, r0 = k === 0 ? 4 : 0;
+        s += `<g data-tip="${esc(tipHtml(name, [["Total", fmtInt(v)], ["Share", (v / T.eng * 100).toFixed(1) + "%"]]))}"><rect x="${x}" y="0" width="${Math.max(0, w)}" height="${bh}" rx="${Math.max(r, r0)}" fill="${css(c)}"/>`;
+        if (r0) s += `<rect x="${x + 4}" y="0" width="${Math.max(0, w - 4)}" height="${bh}" fill="${css(c)}"/>`;
+        if (r) s += `<rect x="${x}" y="0" width="${Math.max(0, w - 4)}" height="${bh}" fill="${css(c)}"/>`;
+        s += "</g>";
+        x += w + gap;
+      });
+      el.innerHTML = s + "</svg>" + '<div class="legend">' + parts.map(([n, v, c]) => `<span><i style="background:var(${c})"></i>${n} ${(v / T.eng * 100).toFixed(1)}%</span>`).join("") + "</div>";
+      document.getElementById("mix-note").textContent = `Likes drive most of the volume; saves (${fmt1(T.sv / T.n)} per post) and shares (${fmt1(T.sh / T.n)}) are the higher-intent signals worth tracking separately.`;
+    }
+
+    // takeaways
+    const ul = document.getElementById("takeaways");
+    if (T.n < 30) { ul.innerHTML = "<li>Too few posts in this selection for reliable comparisons.</li>"; return; }
+    const overall = T.eng / T.n;
+    const best = (groups, labels, f) => { let b = -1, bv = -Infinity, w = -1, wv = Infinity; groups.forEach((g, k) => { if (g.n < 30) return; const v = f(g); if (v > bv) { bv = v; b = k; } if (v < wv) { wv = v; w = k; } }); return b < 0 ? null : { label: labels[b], v: bv, worst: labels[w], wv }; };
+    const items = [];
+    const gc = group(i => C.cat[i], D.categories.length, idx);
+    const be = best(gc, D.categories, g => g.eng / g.n);
+    if (be) items.push(`<b>${esc(be.label)}</b> leads on engagement (${fmt1(be.v)} / post, ${((be.v / overall - 1) * 100).toFixed(1)}% above average). Gap to the weakest category (${esc(be.worst)}) is only ${((be.v / be.wv - 1) * 100).toFixed(1)}%.`);
+    const bf = best(gc, D.categories, g => g.fg / g.n);
+    if (bf) items.push(`<b>${esc(bf.label)}</b> gains the most followers per post (${fmt1(bf.v)}), so the best category depends on the goal.`);
+    const gmt = group(i => C.mt[i], 3, idx);
+    const bm = best(gmt, D.mediaTypes.map(cap), g => g.eng / g.n), bmf = best(gmt, D.mediaTypes.map(cap), g => g.fg / g.n);
+    if (bm && bmf) items.push(`${esc(bm.label)} posts lead on engagement; ${esc(bmf.label)}s lead on follower growth.`);
+    const r = pearson(idx);
+    items.push(`Engagement and follower growth are essentially unrelated (r = ${r.toFixed(3)}). Track them as separate KPIs.`);
+    ul.innerHTML = items.map(t => `<li>${t}</li>`).join("");
+  }
+
+  function pearson(idx) {
+    let n = 0, sx = 0, sy = 0, sxx = 0, syy = 0, sxy = 0;
+    for (const i of idx) { const x = ENG[i], y = C.fg[i]; n++; sx += x; sy += y; sxx += x * x; syy += y * y; sxy += x * y; }
+    const den = Math.sqrt((n * sxx - sx * sx) * (n * syy - sy * sy));
+    return den ? (n * sxy - sx * sy) / den : NaN;
+  }
+
+  function renderContent(idx, T) {
+    const M = METRICS[state.metric];
+    document.getElementById("t-media").textContent = M.label + " by media type";
+    document.getElementById("t-cat").textContent = M.label + " by category";
+    const gmt = group(i => C.mt[i], 3, idx);
+    const mtip = (lab, g) => tipHtml(lab, [[M.label, M.fmt(M.get(g))], ["Posts", fmtInt(g.n)], ["vs overall", ((M.get(g) / M.get(T) - 1) * 100).toFixed(1) + "%"]]);
+    vbars(document.getElementById("c-media"), D.mediaTypes.map((m, k) => ({ label: cap(m), value: gmt[k].n ? M.get(gmt[k]) : 0, color: css(MEDIA_COLORS[k]), tip: gmt[k].n ? mtip(cap(m), gmt[k]) : tipHtml(cap(m), [["Posts", "0"]]) })),
+      { fmt: M.fmt, axisFmt: state.metric === "er" ? v => v.toFixed(0) + "%" : compact, showValues: true, height: 260, metricLabel: M.label, aria: M.label + " by media type" });
+
+    const gc = group(i => C.cat[i], D.categories.length, idx);
+    const rows = D.categories.map((c, k) => ({ label: c, g: gc[k] })).filter(r => r.g.n).map(r => ({ label: r.label, value: M.get(r.g), tip: mtip(r.label, r.g) })).sort((a, b) => b.value - a.value);
+    hbars(document.getElementById("c-cat"), rows, { fmt: M.fmt, labelW: 96, rowH: 26, metricLabel: M.label, aria: M.label + " by category" });
+
+    // scorecard
+    const cols = [["posts", "Posts", g => g.n, fmtInt], ["eng", "Avg engagement", g => g.eng / g.n, fmt1], ["reach", "Avg reach", g => g.rc / g.n, fmtInt],
+      ["imp", "Avg impressions", g => g.im / g.n, fmtInt], ["er", "Avg eng. rate", g => g.er / g.n, fmtPct], ["fg", "Avg followers gained", g => g.fg / g.n, fmt1]];
+    const data = D.categories.map((c, k) => ({ name: c, g: gc[k] })).filter(r => r.g.n);
+    const sc = cols.find(c => c[0] === state.sortKey) || cols[1];
+    data.sort((a, b) => state.sortKey === "name" ? state.sortDir * a.name.localeCompare(b.name) : state.sortDir * (sc[2](a.g) - sc[2](b.g)));
+    const bestOf = cols.map(c => Math.max(...data.map(r => c[2](r.g))));
+    const arrow = k => state.sortKey === k ? (state.sortDir < 0 ? " ↓" : " ↑") : "";
+    let h = `<table><thead><tr><th data-sort="name">Category${arrow("name")}</th>` + cols.map(c => `<th data-sort="${c[0]}">${c[1]}${arrow(c[0])}</th>`).join("") + "</tr></thead><tbody>";
+    data.forEach(r => { h += `<tr><td>${esc(r.name)}</td>` + cols.map((c, k) => `<td class="${k > 0 && c[2](r.g) === bestOf[k] ? "best" : ""}">${c[3](c[2](r.g))}</td>`).join("") + "</tr>"; });
+    h += `<tr><td><b>All selected</b></td>` + cols.map(c => `<td><b>${T.n ? c[3](c[2](T)) : "–"}</b></td>`).join("") + "</tr></tbody></table>";
+    const box = document.getElementById("t-scorecard");
+    box.innerHTML = data.length ? h : '<div class="empty">No posts match these filters.</div>';
+    box.querySelectorAll("th").forEach(th => th.onclick = () => {
+      const k = th.dataset.sort;
+      state.sortDir = state.sortKey === k ? -state.sortDir : (k === "name" ? 1 : -1); state.sortKey = k; render();
+    });
+  }
+
+  function renderGrowth(idx, T) {
+    const r = pearson(idx);
+    document.getElementById("corr").textContent = isFinite(r) ? "r = " + r.toFixed(3) : "–";
+    const strength = !isFinite(r) ? "" : Math.abs(r) < 0.1 ? "No meaningful linear relationship" : Math.abs(r) < 0.3 ? "A weak relationship" : "A moderate or stronger relationship";
+    document.getElementById("corr-note").textContent = isFinite(r) ? `${strength} between a post's engagement and the followers it gained (n = ${fmtInt(T.n)}). Engagement is not a proxy for growth in this data.` : "";
+
+    // scatter sample
+    const el = document.getElementById("c-scatter");
+    if (!T.n) empty(el); else {
+      const step = Math.max(1, Math.ceil(idx.length / 1500));
+      const pts = []; for (let k = 0; k < idx.length; k += step) pts.push(idx[k]);
+      const W = el.clientWidth || 600, H = 296, padL = 46, padB = 34, padT = 26, padR = 10;
+      const xmax = niceMax(SCAT.x), ymax = niceMax(SCAT.y);
+      const plotW = W - padL - padR, plotH = H - padB - padT;
+      const X = v => padL + Math.min(v, xmax) / xmax * plotW, Y = v => padT + plotH - Math.min(v, ymax) / ymax * plotH;
+      let s = svgOpen(W, H, "Scatter of engagement vs followers gained");
+      for (let t = 0; t <= 4; t++) {
+        const yv = ymax * t / 4, xv = xmax * t / 4;
+        s += `<line class="gridline" x1="${padL}" x2="${W - padR}" y1="${Y(yv)}" y2="${Y(yv)}"/><text x="${padL - 6}" y="${Y(yv) + 4}" text-anchor="end">${compact(yv)}</text>`;
+        s += `<text x="${X(xv)}" y="${H - 18}" text-anchor="middle">${compact(xv)}</text>`;
+      }
+      s += `<text x="${padL + plotW / 2}" y="${H - 2}" text-anchor="middle">Total engagement per post${SCAT.clipped ? " (axis capped at 99th percentile)" : ""}</text>`;
+      const c = css("--s1");
+      for (const i of pts) s += `<circle cx="${X(ENG[i]).toFixed(1)}" cy="${Y(C.fg[i]).toFixed(1)}" r="3" fill="${c}" fill-opacity="0.35" data-tip="${esc(tipHtml(D.categories[C.cat[i]] + " · " + cap(D.mediaTypes[C.mt[i]]), [["Engagement", fmtInt(ENG[i])], ["Followers gained", fmtInt(C.fg[i])], ["Reach", fmtInt(C.rc[i])]]))}"/>`;
+      s += `<line class="baseline" x1="${padL}" x2="${W - padR}" y1="${padT + plotH}" y2="${padT + plotH}"/>`;
+      s += `<text x="${padL - 40}" y="10" style="fill:var(--text-secondary)">Followers gained per post</text>`;
+      el.innerHTML = s + "</svg>";
+    }
+
+    const fgM = METRICS.fg;
+    const gc = group(i => C.cat[i], D.categories.length, idx);
+    hbars(document.getElementById("c-fg-cat"), D.categories.map((c, k) => ({ label: c, g: gc[k] })).filter(r => r.g.n)
+      .map(r => ({ label: r.label, value: r.g.fg / r.g.n, tip: tipHtml(r.label, [["Avg followers gained", fmt1(r.g.fg / r.g.n)], ["Total followers gained", fmtInt(r.g.fg)], ["Posts", fmtInt(r.g.n)]]) }))
+      .sort((a, b) => b.value - a.value), { fmt: fgM.fmt, labelW: 96, rowH: 26, metricLabel: fgM.label });
+    const gmt = group(i => C.mt[i], 3, idx);
+    hbars(document.getElementById("c-fg-media"), D.mediaTypes.map((m, k) => ({ label: cap(m), value: gmt[k].n ? gmt[k].fg / gmt[k].n : 0, color: css(MEDIA_COLORS[k]),
+      tip: tipHtml(cap(m), [["Avg followers gained", gmt[k].n ? fmt1(gmt[k].fg / gmt[k].n) : "–"], ["Posts", fmtInt(gmt[k].n)]]) })), { fmt: fgM.fmt, labelW: 80, metricLabel: fgM.label });
+    const ga = group(i => C.at[i], D.accountTypes.length, idx);
+    hbars(document.getElementById("c-fg-acct"), D.accountTypes.map((a, k) => ({ label: cap(a), value: ga[k].n ? ga[k].fg / ga[k].n : 0,
+      tip: tipHtml(cap(a), [["Avg followers gained", ga[k].n ? fmt1(ga[k].fg / ga[k].n) : "–"], ["Avg engagement", ga[k].n ? fmt1(ga[k].eng / ga[k].n) : "–"], ["Posts", fmtInt(ga[k].n)]]) })), { fmt: fgM.fmt, labelW: 80, metricLabel: fgM.label });
+
+    const gcta = group(i => C.cta[i], 2, idx);
+    const ctaRows = M => [1, 0].map(k => ({ label: k ? "With CTA" : "No CTA", value: gcta[k].n ? M.get(gcta[k]) : 0, color: k ? css("--s1") : css("--s2"),
+      tip: tipHtml(k ? "With CTA" : "No CTA", [[M.label, gcta[k].n ? M.fmt(M.get(gcta[k])) : "–"], ["Posts", fmtInt(gcta[k].n)]]) }));
+    hbars(document.getElementById("c-cta-eng"), ctaRows(METRICS.eng), { fmt: fmt1, labelW: 74, metricLabel: "Avg engagement" });
+    hbars(document.getElementById("c-cta-er"), ctaRows(METRICS.er), { fmt: fmtPct, labelW: 74, metricLabel: "Avg engagement rate" });
+    hbars(document.getElementById("c-cta-fg"), ctaRows(METRICS.fg), { fmt: fmt1, labelW: 74, metricLabel: "Avg followers gained" });
+  }
+
+  function renderTiming(idx, T) {
+    const gh = group(i => C.dw[i] * 24 + C.h[i], 7 * 24, idx);
+    const el = document.getElementById("c-heat");
+    if (!T.n) empty(el); else {
+      const W = el.clientWidth || 900, labelW = 40, top = 4, legendH = 34;
+      const cw = (W - labelW) / 24, ch = Math.max(18, Math.min(30, cw * 0.8)), H = top + ch * 7 + 22 + legendH;
+      const vals = gh.filter(g => g.n >= 5).map(g => g.eng / g.n);
+      const lo = vals.length ? Math.min(...vals) : 0, hi = vals.length ? Math.max(...vals) : 1;
+      const color = v => SEQ[Math.max(0, Math.min(SEQ.length - 1, Math.round((v - lo) / (hi - lo || 1) * (SEQ.length - 1))))];
+      let s = svgOpen(W, H, "Heatmap of average engagement by day and hour");
+      D.days.forEach((d, r) => {
+        s += `<text class="lbl" x="${labelW - 8}" y="${top + r * ch + ch / 2 + 4}" text-anchor="end">${d.slice(0, 3)}</text>`;
+        for (let h = 0; h < 24; h++) {
+          const g = gh[r * 24 + h], v = g.n ? g.eng / g.n : NaN;
+          const fill = g.n >= 5 ? color(v) : "var(--grid)";
+          s += `<rect class="cell" x="${labelW + h * cw + 1}" y="${top + r * ch + 1}" width="${cw - 2}" height="${ch - 2}" rx="3" fill="${fill}" data-tip="${esc(tipHtml(d + ", " + String(h).padStart(2, "0") + ":00", [["Avg engagement", g.n ? fmt1(v) : "–"], ["Posts", fmtInt(g.n)], ["Avg eng. rate", g.n ? fmtPct(g.er / g.n) : "–"]]))}"/>`;
+        }
+      });
+      for (let h = 0; h < 24; h += cw < 28 ? 3 : 1) s += `<text x="${labelW + h * cw + cw / 2}" y="${top + ch * 7 + 14}" text-anchor="middle">${String(h).padStart(2, "0")}</text>`;
+      // legend
+      const ly = top + ch * 7 + 26, lw = Math.min(260, W - labelW - 120);
+      s += `<defs><linearGradient id="seqgrad">${SEQ.map((c, k) => `<stop offset="${k / (SEQ.length - 1)}" stop-color="${c}"/>`).join("")}</linearGradient></defs>`;
+      s += `<text x="${labelW}" y="${ly + 10}">${fmt1(lo)}</text><rect x="${labelW + 40}" y="${ly + 1}" width="${lw}" height="10" rx="3" fill="url(#seqgrad)"/><text x="${labelW + 48 + lw}" y="${ly + 10}">${fmt1(hi)} avg engagement</text>`;
+      el.innerHTML = s + "</svg>";
+    }
+
+    const ghr = group(i => C.h[i], 24, idx);
+    line(document.getElementById("c-hour"), ghr.map((g, h) => ({ label: String(h).padStart(2, "0") + ":00", short: String(h).padStart(2, "0"), value: g.n ? g.eng / g.n : NaN,
+      tip: tipHtml(String(h).padStart(2, "0") + ":00", [["Avg engagement", g.n ? fmt1(g.eng / g.n) : "–"], ["Posts", fmtInt(g.n)]]) })), { fmt: fmt1, metricLabel: "Avg engagement", aria: "Average engagement by hour" });
+
+    const gd = group(i => C.dw[i], 7, idx);
+    vbars(document.getElementById("c-day"), D.days.map((d, k) => ({ label: d, short: d.slice(0, 3), value: gd[k].n ? gd[k].eng / gd[k].n : 0,
+      tip: tipHtml(d, [["Avg engagement", gd[k].n ? fmt1(gd[k].eng / gd[k].n) : "–"], ["Posts", fmtInt(gd[k].n)]]) })), { fmt: fmt1, showValues: true, height: 240, metricLabel: "Avg engagement" });
+
+    const gt = group(i => C.ts[i], D.traffic.length, idx);
+    const tsRows = M => D.traffic.map((t, k) => ({ label: t, g: gt[k] })).filter(r => r.g.n).map(r => ({ label: r.label, value: M.get(r.g),
+      tip: tipHtml(r.label, [[M.label, M.fmt(M.get(r.g))], ["Posts", fmtInt(r.g.n)]]) })).sort((a, b) => b.value - a.value);
+    hbars(document.getElementById("c-ts-eng"), tsRows(METRICS.eng), { fmt: fmt1, labelW: 96, metricLabel: "Avg engagement" });
+    hbars(document.getElementById("c-ts-er"), tsRows(METRICS.er), { fmt: fmtPct, labelW: 96, metricLabel: "Avg engagement rate" });
+  }
+
+  // ---------- fixed scales from the full dataset ----------
+  const sortedEng = Float64Array.from(ENG).sort();
+  const p99 = sortedEng[Math.floor(N * 0.99)];
+  const HIST = (() => { const raw = p99 / 20, b = niceMax(raw) / (niceMax(raw) / raw > 1.6 ? 2 : 1); return { bin: b, n: Math.ceil(p99 / b) + 1 }; })();
+  const sortedFg = Float64Array.from(C.fg).sort();
+  const SCAT = { x: p99, y: sortedFg[N - 1] > sortedFg[Math.floor(N * 0.99)] * 1.5 ? sortedFg[Math.floor(N * 0.99)] : sortedFg[N - 1], clipped: sortedEng[N - 1] > p99 };
+
+  // ---------- controls ----------
+  const sel = f => document.querySelector(`select[data-f="${f}"]`);
+  const fill = (f, labels, all = true) => { sel(f).innerHTML = (all ? '<option value="-1">All</option>' : "") + labels.map((l, k) => `<option value="${k}">${esc(l)}</option>`).join(""); };
+  fill("at", D.accountTypes.map(cap)); fill("mt", D.mediaTypes.map(cap)); fill("cat", D.categories); fill("ts", D.traffic);
+  fill("moFrom", D.months.map(monthLabel), false); fill("moTo", D.months.map(monthLabel), false);
+  function syncControls() {
+    ["at", "mt", "cat", "ts", "cta", "moFrom", "moTo"].forEach(f => sel(f).value = String(state[f]));
+  }
+  document.querySelectorAll("#filters select").forEach(s => s.addEventListener("change", () => {
+    state[s.dataset.f] = +s.value;
+    if (state.moFrom > state.moTo) { if (s.dataset.f === "moFrom") state.moTo = state.moFrom; else state.moFrom = state.moTo; }
+    syncControls(); render();
+  }));
+  document.getElementById("reset").onclick = () => { Object.assign(state, { at: -1, mt: -1, cat: -1, ts: -1, cta: -1, moFrom: 0, moTo: D.months.length - 1 }); syncControls(); render(); };
+
+  const seg = document.getElementById("metric-seg");
+  seg.innerHTML = Object.entries(METRICS).map(([k, m]) => `<button data-m="${k}" aria-pressed="${k === state.metric}">${m.short}</button>`).join("");
+  seg.querySelectorAll("button").forEach(b => b.onclick = () => { state.metric = b.dataset.m; seg.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); render(); });
+
+  document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => {
+    state.page = b.dataset.page;
+    document.querySelectorAll("nav.tabs button").forEach(x => x.setAttribute("aria-selected", x === b));
+    document.querySelectorAll(".page").forEach(p => p.classList.toggle("active", p.id === "page-" + state.page));
+    history.replaceState(null, "", "#" + state.page);
+    render();
+  });
+
+  document.getElementById("subtitle").innerHTML =
+    `${fmtInt(N)} posts &middot; ${DATA.meta.accounts} accounts &middot; ${esc(DATA.meta.start)} to ${esc(DATA.meta.end)}`;
+
+  function render() {
+    const idx = filtered(), T = total(idx);
+    document.getElementById("count").textContent = fmtInt(idx.length) + " of " + fmtInt(N) + " posts";
+    ({ overview: renderOverview, content: renderContent, growth: renderGrowth, timing: renderTiming })[state.page](idx, T);
+  }
+
+  let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(render, 120); });
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", render);
+  const hashPage = location.hash.slice(1);
+  if (["overview", "content", "growth", "timing"].includes(hashPage)) document.querySelector(`nav.tabs button[data-page="${hashPage}"]`).click();
+  else { syncControls(); render(); }
+  syncControls();
+})();
+</script>
+</body>
+</html>

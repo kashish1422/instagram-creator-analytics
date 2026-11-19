@@ -46,14 +46,19 @@ The analysis examines how media types, content categories, posting times, traffi
 Instagram_Creator_Analysis/
 ├── Data/
 │   └── Cleaned/
-├── Documents/
-│   └── insights_and_recommendations.md
+├── Docs/
+│   └── Insights_Recommendation.md
 ├── Python/
 │   └── data_understanding.ipynb
 ├── SQL/
 │   └── analysis.sql
 ├── PowerBI/
 │   └── Instagram_Creator_Analytics.pbix
+├── Dashboard/
+│   ├── index.html               # interactive web dashboard (open in a browser)
+│   ├── dashboard_template.html  # dashboard layout and chart code
+│   ├── build_dashboard.py       # rebuilds index.html from the cleaned CSV
+│   └── screenshots/
 ├── .gitignore
 └── README.md
 ```
@@ -120,6 +125,20 @@ The additional datasets evaluated during the project were not combined with the 
 
 These recommendations are based on observed associations in the available dataset. They do not establish causation.
 
+## Interactive Web Dashboard
+
+A browser-based version of the dashboard lives in [`Dashboard/`](Dashboard/). It is a single self-contained HTML file (no installs, no external libraries) built from the cleaned dataset, with filters for account type, media type, category, traffic source, call to action, and month range. Every chart, KPI, and takeaway recomputes live for the current filters.
+
+**Live demo:** enable GitHub Pages (Settings → Pages → Deploy from branch → `main` / root) and open `https://kashish1422.github.io/instagram-creator-analytics/Dashboard/`. Or download `Dashboard/index.html` and open it in any browser.
+
+| Overview | Content Performance |
+|---|---|
+| ![Overview](Dashboard/screenshots/overview.png) | ![Content Performance](Dashboard/screenshots/content.png) |
+| **Audience & Growth** | **Posting Time & Traffic** |
+| ![Audience & Growth](Dashboard/screenshots/growth.png) | ![Posting Time & Traffic](Dashboard/screenshots/timing.png) |
+
+To rebuild after changing the data: `python Dashboard/build_dashboard.py` (requires pandas).
+
 ## Power BI Dashboard
 
 The interactive dashboard contains four main pages:
@@ -133,7 +152,7 @@ The dashboard uses an Instagram-inspired visual theme and interactive navigation
 
 ## Project Documentation
 
-- [Insights and Recommendations](Documents/insights_and_recommendations.md)
+- [Insights and Recommendations](Docs/Insights_Recommendation.md)
 - [SQL Analysis](SQL/analysis.sql)
 - [Python Analysis](Python/data_understanding.ipynb)
 
